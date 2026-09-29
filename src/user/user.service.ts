@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
 // Nunca devolvemos el password
 const userSelect = {
@@ -28,5 +30,13 @@ export class UserService {
     });
     if (!user) throw new NotFoundException(`Usuario ${id} no encontrado`);
     return user;
+  }
+
+  async create(dto: CreateUserDto) {
+    const password = await bcrypt.hash(dto.password, 10);
+    return this.prisma.user.create({
+      data: { ...dto, password },
+      select: userSelect,
+    });
   }
 }
