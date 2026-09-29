@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 // Nunca devolvemos el password
@@ -19,5 +19,14 @@ export class UserService {
 
   findAll() {
     return this.prisma.user.findMany({ select: userSelect });
+  }
+
+  async findOne(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: userSelect,
+    });
+    if (!user) throw new NotFoundException(`Usuario ${id} no encontrado`);
+    return user;
   }
 }
