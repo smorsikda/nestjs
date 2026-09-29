@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 // Nunca devolvemos el password
 const userSelect = {
@@ -36,6 +37,17 @@ export class UserService {
     const password = await bcrypt.hash(dto.password, 10);
     return this.prisma.user.create({
       data: { ...dto, password },
+      select: userSelect,
+    });
+  }
+
+  async update(id: number, dto: UpdateUserDto) {
+    await this.findOne(id);
+    const data = { ...dto };
+    if (dto.password) data.password = await bcrypt.hash(dto.password, 10);
+    return this.prisma.user.update({
+      where: { id },
+      data,
       select: userSelect,
     });
   }
